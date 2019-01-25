@@ -8,7 +8,7 @@ def get_args():
     parser.add_argument('hosts', type=str, help='CSV list of addresses to grab from.') 
     parser.add_argument('-p', '--ports', type=str, default='22,25,80', help='CSV list of ports {default: %(default)s}')
     parser.add_argument('-n', '--no-log', action='store_true', help='no log file')
-    parser.add_argument('-t', '--timeout', type=int, nargs=1, default=5, help='time (in seconds) to wait before closing connection {default: %(default)s}')
+    parser.add_argument('-t', '--timeout', type=int, default=5, help='time (in seconds) to wait before closing connection {default: %(default)s}')
     parser.add_argument('-v', '--verbose', action='store_true', help='verboes  printing')
     return parser.parse_args()
 
@@ -37,9 +37,9 @@ __________                                     ________            ___.
 
     # Write in custom behaviors here.
     port_req = {
-        22: ['\r\n\r\n'],
-        25: ['\r\n\r\n'],
-        80: ['HEAD / HTTP/1.0\r\n\r\n', 'HEAD / HTTP/1.1\r\nHost: host:port\r\n\r\n', '']  
+        22: [''],
+        25: [''],
+        80: ['HEAD / HTTP/1.0\r\n\r\n', '']  
     }
 
     log = []
@@ -49,7 +49,7 @@ __________                                     ________            ___.
 
         for port in ports:
             sock = socket.socket()
-            sock.settimeout(int(timeout))
+            sock.settimeout(timeout)
 
             port = int(port)
 
@@ -65,16 +65,16 @@ __________                                     ________            ___.
 
             except socket.timeout:
                 if address_down:  
-                    connect = 'Address down or address\' port closed.'
+                    connect = 'address down or address\' port closed'
                 else:
-                    connect = 'Port closed.'
+                    connect = 'port closed'
 
             except Exception as e:
                 connect = str(e)
                 address_down = True
 
             else:
-                connect = 'Connection successful.'
+                connect = 'connection successful'
                 address_down = False
 
             if not address_down:
@@ -94,7 +94,8 @@ __________                                     ________            ___.
                             resp = 'empty response'
                     except socket.timeout: 
                         resp = 'empty response'
-                    
+                    except socket.error as e:
+                        resp = e
                     else:
                         resps.append(resp)
 
@@ -112,15 +113,25 @@ __________                                     ________            ___.
 def pretty_print(data, data_desc):
     for val in range(0, len(data)):
         if type(data[val]) is not list:
-            print(str(data_desc[val]) + ': ' + str(data[val]).rstrip('\n'))
-        else:
+            print(str(data_desc[val]) + ': ' + str(data[val]).rstrip())
+
+        if type(data[val]) is list and data[val]:
+
             print('--------------------------------')
             max_length = get_max(data[val])
 
             for element in range(0, len(data[val])):
-                # num_of_spaces = (max_length - len(data[val][element])) + 1
-                # spaces = ' ' * num_of_spaces
-                print(data[val][element] + ' [' + str(element) + ']')
+                if element is 0:
+                    print('[' + data_desc[val] + ']') 
+
+                if data[val][element].strip().count(' ') is len(data[val][element]):
+                    data[val][element] = '[empty msg]'
+                    max_length = get_max(data[val])
+
+                num_of_spaces = (max_length - len(data[val][element]))
+                spaces = ' ' * num_of_spaces
+
+                print(data[val][element].strip() + spaces + ' [' + str(element) + ']')
     
     print('--------------------------------')
     print('\n')
@@ -130,8 +141,14 @@ def get_max(lizt):
     max = -1
 
     for element in lizt:
+        element = element.strip()
+
         length = len(element)
-        
+
+        if element.count('\n') > 0:
+            start = element.rfind('\n')
+            length = len(element[start + 1:])
+
         if length > max:
             max = length
         
@@ -142,7 +159,11 @@ def recv(sock, bufsize):
     data = ''
 
     while True:
-        buffer = sock.recv(bufsize)
+        try:
+            buffer = sock.recv(bufsize)
+        except socket.timeout:
+            break
+        
         data += buffer.decode('utf-8')
 
         if not buffer:
