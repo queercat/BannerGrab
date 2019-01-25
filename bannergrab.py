@@ -116,7 +116,6 @@ def pretty_print(data, data_desc):
             print(str(data_desc[val]) + ': ' + str(data[val]).rstrip())
 
         if type(data[val]) is list and data[val]:
-
             print('--------------------------------')
             max_length = get_max(data[val])
 
