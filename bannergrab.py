@@ -8,7 +8,7 @@ def get_args():
     parser.add_argument('hosts', type=str, help='CSV list of addresses to grab from.') 
     parser.add_argument('-p', '--ports', type=str, default='22,25,80', help='CSV list of ports {default: %(default)s}')
     parser.add_argument('-n', '--no-log', action='store_true', help='no log file')
-    parser.add_argument('-t', '--timeout', type=int, nargs=1, default=5, help='time (in seconds) to wait before closing connection {default: %s(default)s}')
+    parser.add_argument('-t', '--timeout', type=int, nargs=1, default=5, help='time (in seconds) to wait before closing connection {default: %(default)s}')
     parser.add_argument('-v', '--verbose', action='store_true', help='verboes  printing')
     return parser.parse_args()
 
