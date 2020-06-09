@@ -8,13 +8,12 @@ def get_args():
     parser.add_argument('hosts', type=str, help='CSV list of addresses to grab from.') 
     parser.add_argument('-p', '--ports', type=str, default='22,25,80', help='CSV list of ports {default: %(default)s}')
     parser.add_argument('-n', '--no-log', action='store_true', help='no log file')
-    parser.add_argument('-t', '--timeout', type=int, default=5, help='time (in seconds) to wait before closing connection {default: %(default)s}')
-    parser.add_argument('-v', '--verbose', action='store_true', help='verboes  printing')
+    parser.add_argument('-t', '--timeout', type=int, default=3, help='time (in seconds) to wait before closing connection {default: %(default)s}')
     return parser.parse_args()
 
 def main():
     a = get_args() # Get the CLI args.
-    grab(a.hosts, a.ports, not a.no_log, a.timeout, a.verbose)
+    grab(a.hosts, a.ports, not a.no_log, a.timeout, True)
 
 def grab(hosts, ports, logging, timeout, verbose):
     # GET HOST:
@@ -90,7 +89,7 @@ __________                                     ________            ___.
 
                         resp = recv(sock, 4096)
 
-                        if resp is '':
+                        if resp == '':
                             resp = 'empty response'
                     except socket.timeout: 
                         resp = 'empty response'
@@ -120,10 +119,10 @@ def pretty_print(data, data_desc):
             max_length = get_max(data[val])
 
             for element in range(0, len(data[val])):
-                if element is 0:
+                if element == 0:
                     print('[' + data_desc[val] + ']') 
 
-                if data[val][element].strip().count(' ') is len(data[val][element]):
+                if data[val][element].strip().count(' ') == len(data[val][element]):
                     data[val][element] = '[empty msg]'
                     max_length = get_max(data[val])
 
