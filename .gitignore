@@ -106,5 +106,4 @@ venv.bak/
 # VSCode
 .vscode
 
-.pygrab.py.swp
-
+*.swp
